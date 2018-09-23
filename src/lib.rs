@@ -62,21 +62,9 @@ impl<T> Index<usize> for List<T> {
 // TODO(tgvashworth): how do you write an example for this? "cannot find macro" errors abound
 #[macro_export]
 macro_rules! list {
-    () => {
-        {
-            Nil
-        }
-    };
-    ($head:expr) => {
-        {
-            Cons($head, Rc::new(Nil))
-        }
-    };
-    ($head:expr, $($tail:expr),*) => {
-        {
-            Cons($head, Rc::new(list![$($tail),*]))
-        }
-    };
+    () => (Nil);
+    ($head:expr) => (Cons($head, Rc::new(Nil)));
+    ($head:expr, $($tail:expr),*) => (Cons($head, Rc::new(list![$($tail),*])));
 }
 
 #[cfg(test)]
