@@ -59,7 +59,18 @@ impl<T> Index<usize> for List<T> {
 /// Creates a `List` containing the arguments.
 ///
 /// `list!` allows `List`s to be created with the same syntax as an array.
-// TODO(tgvashworth): how do you write an example for this? "cannot find macro" errors abound
+///
+/// You need to import `Cons` and `Nil` from this crate, and `std::rc::Rc` to use this macro.
+///
+/// # Examples
+///
+/// ```
+/// # #[macro_use] extern crate cons_list_rs; fn main() {
+/// use cons_list_rs::List::{Cons,Nil};
+/// use std::rc::Rc;
+/// let list = list![1, 2, 3];
+/// # }
+/// ```
 #[macro_export]
 macro_rules! list {
     () => (Nil);
