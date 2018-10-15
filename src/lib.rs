@@ -11,9 +11,8 @@
 //! ## Examples
 //!
 //! ```
-//! # #[macro_use] extern crate cons_list_rs; fn main() {
-//! use cons_list_rs::List::{Cons,Nil};
-//! use std::rc::Rc;
+//! # #[macro_use] extern crate cons_list_rs;
+//! # fn main() {
 //! let list = list![1, 2, 3];
 //! # }
 //! ```
@@ -22,14 +21,37 @@ use std::iter::{FromIterator, IntoIterator, Iterator};
 use std::ops::Index;
 use std::rc::Rc;
 
+/// Creates a `List` containing the arguments.
+///
+/// `list!` allows `List`s to be created with the same syntax as an array.
+///
+/// You need to import `Cons` and `Nil` from this crate, and `std::rc::Rc` to use this macro.
+///
+/// # Examples
+///
+/// ```
+/// # #[macro_use] extern crate cons_list_rs;
+/// # fn main() {
+/// let list = list![1, 2, 3];
+/// # }
+/// ```
+#[macro_export]
+macro_rules! list {
+    () => ($crate::List::Nil);
+    ($head:expr) => ($crate::List::Cons($head, std::rc::Rc::new($crate::List::Nil)));
+    ($head:expr, $($tail:expr),*) => ($crate::List::Cons($head, std::rc::Rc::new(list![$($tail),*])));
+}
+
 /// An immutable linked-list data structure.
 ///
 /// # Examples
 ///
 /// ```
-/// use std::rc::Rc;
-/// use cons_list_rs::List::{Cons, Nil};
-/// let list = Cons("a", Rc::new(Cons("b", Rc::new(Nil))));
+/// # #[macro_use] extern crate cons_list_rs;
+/// use cons_list_rs::List;
+/// # fn main() {
+/// let list = list![1, 2, 3];
+/// # }
 /// ```
 #[derive(Debug)]
 pub enum List<T> {
@@ -89,28 +111,6 @@ impl<T> Index<usize> for List<T> {
             None => panic!("out of bounds"),
         }
     }
-}
-
-/// Creates a `List` containing the arguments.
-///
-/// `list!` allows `List`s to be created with the same syntax as an array.
-///
-/// You need to import `Cons` and `Nil` from this crate, and `std::rc::Rc` to use this macro.
-///
-/// # Examples
-///
-/// ```
-/// # #[macro_use] extern crate cons_list_rs; fn main() {
-/// use cons_list_rs::List::{Cons,Nil};
-/// use std::rc::Rc;
-/// let list = list![1, 2, 3];
-/// # }
-/// ```
-#[macro_export]
-macro_rules! list {
-    () => (Nil);
-    ($head:expr) => (Cons($head, Rc::new(Nil)));
-    ($head:expr, $($tail:expr),*) => (Cons($head, Rc::new(list![$($tail),*])));
 }
 
 // Iterators
