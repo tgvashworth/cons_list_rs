@@ -1,3 +1,23 @@
+//! An immutable Cons list.
+//!
+//! If you need a list of things that...
+//!
+//! - doesn't have many good features
+//! - you could write yourself
+//! - performs worse than almost all other available options
+//!
+//! ...then this is the data structure for you!!
+//!
+//! ## Examples
+//!
+//! ```
+//! # #[macro_use] extern crate cons_list_rs; fn main() {
+//! use cons_list_rs::List::{Cons,Nil};
+//! use std::rc::Rc;
+//! let list = list![1, 2, 3];
+//! # }
+//! ```
+
 use std::iter::{FromIterator, IntoIterator, Iterator};
 use std::ops::Index;
 use std::rc::Rc;
