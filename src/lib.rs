@@ -1,3 +1,4 @@
+use std::iter::Iterator;
 use std::ops::Index;
 use std::rc::Rc;
 
@@ -38,6 +39,11 @@ impl<T> List<T> {
             Cons(_, tail) => 1 + tail.len(),
         }
     }
+
+    /// Get an `Iter` over this list.
+    pub fn iter(&self) -> Iter<T> {
+        Iter::new(&self)
+    }
 }
 
 impl<T> Index<usize> for List<T> {
@@ -76,6 +82,32 @@ macro_rules! list {
     () => (Nil);
     ($head:expr) => (Cons($head, Rc::new(Nil)));
     ($head:expr, $($tail:expr),*) => (Cons($head, Rc::new(list![$($tail),*])));
+}
+
+// Iterators
+
+/// An iterator over lists with values of type `T`.
+///
+/// To obtain one, use `List::iter()`.
+pub struct Iter<'a, T: 'a> {
+    seq: &'a List<T>,
+    index: usize,
+}
+
+impl<'a, T> Iter<'a, T> {
+    fn new(seq: &'a List<T>) -> Self {
+        Iter { seq, index: 0 }
+    }
+}
+
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let value = self.seq.nth(self.index);
+        self.index += 1;
+        value
+    }
 }
 
 #[cfg(test)]
@@ -184,5 +216,29 @@ mod tests {
         assert_eq!(list[1], 2);
         assert_eq!(list[2], 3);
         assert_eq!(list.len(), 3);
+    }
+
+    // Iterators
+
+    #[test]
+    fn iter_simple() {
+        let list = list![1, 2, 3];
+        let mut iter = Iter::new(&list);
+
+        assert_eq!(Some(&1), iter.next());
+        assert_eq!(Some(&2), iter.next());
+        assert_eq!(Some(&3), iter.next());
+        assert_eq!(None, iter.next());
+    }
+
+    #[test]
+    fn list_iter() {
+        let list = list![1, 2, 3];
+        let mut iter = list.iter();
+
+        assert_eq!(Some(&1), iter.next());
+        assert_eq!(Some(&2), iter.next());
+        assert_eq!(Some(&3), iter.next());
+        assert_eq!(None, iter.next());
     }
 }
