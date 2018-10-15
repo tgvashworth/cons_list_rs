@@ -325,4 +325,16 @@ mod tests {
         assert_eq!(list[2], 3);
         assert_eq!(list.len(), 3);
     }
+
+    #[test]
+    fn list_collect() {
+        let list = list![1,2,3];
+
+        let result: List<_> = list.into_iter().map(|&x| x + 1).collect();
+
+        assert_eq!(result[0], 2);
+        assert_eq!(result[1], 3);
+        assert_eq!(result[2], 4);
+        assert_eq!(result.len(), 3);
+    }
 }
