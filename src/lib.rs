@@ -1,4 +1,4 @@
-use std::iter::Iterator;
+use std::iter::{IntoIterator, Iterator};
 use std::ops::Index;
 use std::rc::Rc;
 
@@ -42,7 +42,7 @@ impl<T> List<T> {
 
     /// Get an `Iter` over this list.
     pub fn iter(&self) -> Iter<T> {
-        Iter::new(&self)
+        Iter::new(self)
     }
 }
 
@@ -107,6 +107,17 @@ impl<'a, T> Iterator for Iter<'a, T> {
         let value = self.seq.nth(self.index);
         self.index += 1;
         value
+    }
+}
+
+// IntoIterator
+
+impl<'a, T> IntoIterator for &'a List<T> {
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }
 
@@ -240,5 +251,28 @@ mod tests {
         assert_eq!(Some(&2), iter.next());
         assert_eq!(Some(&3), iter.next());
         assert_eq!(None, iter.next());
+    }
+
+    #[test]
+    fn list_into_iter() {
+        let list = list![1, 2, 3];
+        let mut iter = list.into_iter();
+
+        assert_eq!(Some(&1), iter.next());
+        assert_eq!(Some(&2), iter.next());
+        assert_eq!(Some(&3), iter.next());
+        assert_eq!(None, iter.next());
+    }
+
+    #[test]
+    fn list_for() {
+        let list = list![1,2,3];
+        let mut sum = 0;
+
+        for i in list.into_iter() {
+            sum += i
+        }
+
+        assert_eq!(6, sum);
     }
 }
