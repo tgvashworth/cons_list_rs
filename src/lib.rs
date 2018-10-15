@@ -1,4 +1,4 @@
-use std::iter::{IntoIterator, Iterator};
+use std::iter::{FromIterator, IntoIterator, Iterator};
 use std::ops::Index;
 use std::rc::Rc;
 
@@ -20,6 +20,15 @@ pub enum List<T> {
 use List::{Cons, Nil};
 
 impl<T> List<T> {
+    pub fn from<I>(mut iter: I) -> Self
+        where I: Iterator<Item = T>
+    {
+        match iter.next() {
+            None => Nil,
+            Some(v) => Cons(v, Rc::new(List::from(iter)))
+        }
+    }
+
     /// Get `Some(x)`, the nth value of the list, or None.
     pub fn nth(&self, n: usize) -> Option<&T> {
         match self {
@@ -118,6 +127,21 @@ impl<'a, T> IntoIterator for &'a List<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
+    }
+}
+
+// FromIterator
+
+impl<T> FromIterator<T> for List<T> {
+    fn from_iter<I>(iter: I) -> Self
+        where I: IntoIterator<Item = T>
+    {
+        // This is a bit weird. My understanding is that the into type
+        // constraint on I, in the signature of FromIterator::from_iter,
+        // is IntoIterator. That means it *might not be an iterator*,
+        // and we have to make sure that it is. I think... but using
+        // List::from with a into_iter directly also works. Idk.
+        List::from(iter.into_iter())
     }
 }
 
@@ -274,5 +298,31 @@ mod tests {
         }
 
         assert_eq!(6, sum);
+    }
+
+    #[test]
+    fn list_from_iter() {
+        let vec = vec![1,2,3];
+        let iter = vec.into_iter();
+
+        let list = List::from_iter(iter);
+
+        assert_eq!(list[0], 1);
+        assert_eq!(list[1], 2);
+        assert_eq!(list[2], 3);
+        assert_eq!(list.len(), 3);
+    }
+
+    #[test]
+    fn list_from() {
+        let vec = vec![1,2,3];
+        let iter = vec.into_iter();
+
+        let list = List::from(iter);
+
+        assert_eq!(list[0], 1);
+        assert_eq!(list[1], 2);
+        assert_eq!(list[2], 3);
+        assert_eq!(list.len(), 3);
     }
 }
