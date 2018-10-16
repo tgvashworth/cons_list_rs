@@ -17,6 +17,7 @@
 //! # }
 //! ```
 
+use std::convert::From;
 use std::iter::{FromIterator, IntoIterator, Iterator};
 use std::ops::Index;
 use std::rc::Rc;
@@ -62,12 +63,12 @@ pub enum List<T> {
 use List::{Cons, Nil};
 
 impl<T> List<T> {
-    pub fn from<I>(mut iter: I) -> Self
+    fn from_iterator<I>(mut iter: I) -> Self
         where I: Iterator<Item = T>
     {
         match iter.next() {
             None => Nil,
-            Some(v) => Cons(v, Rc::new(List::from(iter)))
+            Some(v) => Cons(v, Rc::new(List::from_iterator(iter))),
         }
     }
 
@@ -110,6 +111,22 @@ impl<T> Index<usize> for List<T> {
             Some(v) => &v,
             None => panic!("out of bounds"),
         }
+    }
+}
+
+// From
+
+impl<T> From<Vec<T>> for List<T> {
+    /// Create a list from a [`std::vec::Vec`][vec].
+    fn from(vec: Vec<T>) -> Self {
+        vec.into_iter().collect()
+    }
+}
+
+impl<'a, T: Clone> From<&'a Vec<T>> for List<T> {
+    /// Create a list from a [`std::vec::Vec`][vec].
+    fn from(vec: &Vec<T>) -> Self {
+        vec.into_iter().cloned().collect()
     }
 }
 
@@ -161,7 +178,7 @@ impl<T> FromIterator<T> for List<T> {
         // is IntoIterator. That means it *might not be an iterator*,
         // and we have to make sure that it is. I think... but using
         // List::from with a into_iter directly also works. Idk.
-        List::from(iter.into_iter())
+        List::from_iterator(iter.into_iter())
     }
 }
 
@@ -338,7 +355,7 @@ mod tests {
         let vec = vec![1,2,3];
         let iter = vec.into_iter();
 
-        let list = List::from(iter);
+        let list = List::from_iterator(iter);
 
         assert_eq!(list[0], 1);
         assert_eq!(list[1], 2);
@@ -356,5 +373,34 @@ mod tests {
         assert_eq!(result[1], 3);
         assert_eq!(result[2], 4);
         assert_eq!(result.len(), 3);
+    }
+
+    #[test]
+    fn list_from_vec() {
+        let vec = vec![1, 2, 3];
+
+        let list = List::from(vec);
+
+        assert_eq!(list[0], 1);
+        assert_eq!(list[1], 2);
+        assert_eq!(list[2], 3);
+        assert_eq!(list.len(), 3);
+    }
+
+    #[test]
+    fn list_from_vec_ref() {
+        let vec = vec![1, 2, 3];
+
+        let list = List::from(&vec);
+
+        assert_eq!(list[0], 1);
+        assert_eq!(list[1], 2);
+        assert_eq!(list[2], 3);
+        assert_eq!(list.len(), 3);
+
+        assert_eq!(vec[0], 1);
+        assert_eq!(vec[1], 2);
+        assert_eq!(vec[2], 3);
+        assert_eq!(vec.len(), 3);
     }
 }
